@@ -1,0 +1,24 @@
+{
+    "total": 1,
+    "pageNumber": 0,
+    "pageSize": 10,
+    "services": [
+      {
+        "id": "service_all",
+        "defaultOidcScope": "did_write",
+        "oidcScopes": {
+          "did_write": [
+            {
+              "type": "VerifiableCredential",
+              "trustedParticipantsLists": [
+                "https://tir-pdc.gaia-x.fiware.dev"
+              ],
+              "trustedIssuersLists": [
+                "https://til-pdc.gaia-x.fiware.dev"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }

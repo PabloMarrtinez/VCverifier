@@ -1,0 +1,511 @@
+openapi: 3.0.3
+info:
+  title: vcverifier
+  description: Backend component to verify credentials
+  version: 0.0.1
+tags:
+  - name: frontend
+    description: All endpoints that belong to the frontend-application part
+  - name: api
+    description: All api-endpoints, e.g. the once that can be reused by other applications
+    
+paths:
+  /api/v1/loginQR:
+    get:
+      tags:
+        - frontend
+      parameters:
+        - $ref: '#/components/parameters/QueryState'
+        - $ref: '#/components/parameters/ClientCallback'
+        - $ref: '#/components/parameters/ClientId'
+      operationId: VerifierPageDisplayQRSIOP
+      summary: Presents a qr as starting point for the auth process
+      description: Returns a rendered html with a QR encoding the login-starting point for the siop flow - e.g. 'openid://?scope=somethign&response_type=rt&response_mode=rm&client_id=ci&redirect_uri=uri&state=state&nonce=nonce'
+      responses:
+        '200':
+          description: A rendered page, containing the qr
+          content:
+            text/html:
+              schema:
+                type: object
+        '400':
+          description: In case of broken requests.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /api/v1/samedevice:
+    get:
+      tags:
+        - api
+      parameters:
+        - $ref: '#/components/parameters/QueryState'
+        - $ref: '#/components/parameters/ClientId'
+      operationId: StartSIOPSameDevice
+      summary: Starts the siop flow for credentials hold by the same device
+      description: When the credential is already present in the requesting browser, the same-device flow can be used. It creates the login information and then redirects to the /authenticationresponse path.
+      responses: 
+        '302':
+          description: A redirect to the authenticationresponse path, containing scope, response_type, client_id, redirect_uri, state and nonce to be used for the request
+  
+  /api/v1/startsiop:
+    get:
+      tags:
+        - api 
+      parameters:
+        - $ref: '#/components/parameters/QueryState'
+        - $ref: '#/components/parameters/ClientCallback'
+      operationId: VerifierAPIStartSIOP
+      summary: Initiates the siop flow and returns the 'openid://...' connection string
+      responses:
+        '200': 
+          description: The connection string 
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: openid://?scope=dsba.credentials.presentation.PacketDeliveryService&response_type=vp_token&response_mode=post&client_id=did:key:z6MktZy7CErCqdLvknH6g9YNVpWupuBNBNovsBrj4DFGn4R1&redirect_uri=http://localhost:3000/verifier/api/v1/authenticationresponse&state=&nonce=BfEte4DFdlmdO7a_fBiXTw        
+
+  /api/v1/authentication_response:
+    post:
+      tags:
+        - api 
+      parameters:
+        - $ref: '#/components/parameters/QueryState'
+        - $ref: '#/components/parameters/ClientId'
+      operationId: VerifierAPIAuthenticationResponse
+      summary: Stores the credential for the given session
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthenticationResponse'
+      responses:
+        '204':  
+          description: Ok when it worked
+    get:
+      tags:
+        - api
+      parameters:
+        - $ref: '#/components/parameters/QueryState'
+        - $ref: '#/components/parameters/VpToken'
+        - $ref: '#/components/parameters/PresentationSubmission'
+      operationId: GetVerifierAPIAuthenticationResponse
+      summary: Stores the credential for the given session
+      responses:
+        '204':  
+          description: Ok when it worked
+        
+  /token:
+    post:
+      tags:
+        - api
+      operationId: GetToken
+      summary: Token endpoint to exchange the authorization code with the actual JWT.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+      responses:
+        '200':
+          description: The pre-generated token 
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/TokenResponse'
+        '403':
+          description: Whenever something is requested that is not allowed or existent
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/ErrorMessage'
+  /.well-known/jwks:
+    get: 
+      tags:
+        - api
+      operationId: VerifierAPIJWKS
+      summary: Provides the public keys for the given verifier, to be used for verifing the JWTs
+      responses:
+        '200': 
+          description: The list of public keys, belonging to the issuer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWKSet'
+  /services/{serviceIdentifier}/.well-known/openid-configuration:
+    get:
+      tags:
+        - api
+      operationId: VerifierAPIOpenIDConfiguration
+      summary: Returns the configuration of the OpenID Provider
+      responses:
+        '200':
+          description: OpenID Provider Metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenIDProviderMetadata'
+
+  /info:
+    get: 
+      tags:
+        - base
+      operationId: GetBackendInfo
+      summary: Returns the issuer and verifier did, generated on startup
+      responses:
+        '200':
+          description: Object containing the info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackendInfo'
+                
+components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        example: urn:uuid:274e7465-cc9d-4cad-b75f-190db927e56a
+    State:
+      name: state
+      in: path
+      required: true
+      schema: 
+        type: string
+        example: 274e7465-cc9d-4cad-b75f-190db927e56a
+    QueryState:
+      name: state
+      in: query
+      required: true
+      schema: 
+        type: string
+        example: 274e7465-cc9d-4cad-b75f-190db927e56a
+    ClientCallback:
+      name: client_callback
+      description: Endpoint of the client to receive the jwt.
+      in: query
+      required: true
+      schema:
+        type: string
+        format: url
+        example: "https://my-portal.com/auth_callback"
+    QueryId:
+      name: id
+      in: query
+      required: true
+      schema:
+        type: string
+        example: urn:uuid:274e7465-cc9d-4cad-b75f-190db927e56a
+    RedirectUri:
+      name: redirect_uri
+      in: query
+      required: true
+      schema:
+        type: string
+        example: https://my-verifier.com/verifier/api/v1/authenticationresponse
+    VpToken:
+      name: vp_token
+      description: base64URLEncoded VerifiablePresentation
+      in: query
+      required: true
+      schema: 
+        type: string
+    PresentationSubmission:
+      name: presentation_submission
+      description: base64URLEncoded PresentationSubmission as specified by https://identity.foundation/presentation-exchange/#presentation-submission
+      in: query
+      required: true
+      schema:
+        type: string
+    ClientId:
+      name: client_id
+      description: The id of the client/service that intents to start the authentication flow. Will be used to retrieve the scope and trust services to be used for verification.
+      in: query
+      required: false 
+      schema: 
+        type: string
+        example: packet-delivery-portal
+  schemas:
+    CredentialsType:
+      type: array
+      items:
+        type: string
+      example:
+        - PacketDeliveryService
+        - VerifiableCredential
+    Did:
+      type: object
+      properties:
+        id:
+          type: string
+          format: did
+          example: did:key:z6Mks9m9ifLwy3JWqH4c57EbBQVS2SpRCjfa79wHb5vWM6vh
+    Date:
+      type: string
+      format: date-time
+      example: 2023-01-06T07:51:36Z
+    Proof:
+      type: object
+      properties:
+        type:
+          type: string
+          example: JsonWebSignature2020
+        creator: 
+          type: string
+          format: did
+          example: did:key:z6Mks9m9ifLwy3JWqH4c57EbBQVS2SpRCjfa79wHb5vWM6vh
+        created:
+          $ref: '#/components/schemas/Date'
+        verificationMethod:
+          type: string
+          example: did:key:z6Mks9m9ifLwy3JWqH4c57EbBQVS2SpRCjfa79wHb5vWM6vh#z6Mks9m9ifLwy3JWqH4c57EbBQVS2SpRCjfa79wHb5vWM6vh
+        jws:
+          type: string
+          example: eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJFZERTQSJ9..6xSqoZja0NwjF0af9Zknqx3Cbh9GENunBf9C8uL2ulGfwus3UFM_ZnhPjWtHPl-72E9p3BT5f2ptZoYktMKpDA
+    BackendInfo:
+      type: object
+      properties:
+        issuerDid:
+          $ref: '#/components/schemas/Did'
+        verifierDid:
+          $ref: '#/components/schemas/Did'
+    Descriptor:
+      type: object
+      properties: 
+        id: 
+          type: string
+          description: The value of this property MUST be a string that matches the id property of the Input Descriptor in the Presentation Definition that this Presentation Submission is related to.
+          example: id_credential
+        format:
+          type: string
+          description: The value of this property MUST be a string that matches one of the Claim Format Designation. This denotes the data format of the Claim.
+          example: ldp_vc
+        path:
+          type: string
+          description: The value of this property MUST be a JSONPath string expression. The path property indicates the Claim submitted in relation to the identified Input Descriptor, when executed against the top-level of the object the Presentation Submission is embedded within.
+          example: $
+        path_nested:
+          $ref: '#/components/schemas/Descriptor'
+      required:
+        - id
+        - format
+        - path
+    PresentationSubmission:
+      type: object
+      description: PresentationSubmission as specified by https://identity.foundation/presentation-exchange/#presentation-submission
+      properties:
+        id: 
+          type: string
+          description: Must be a string that matches the id property of the Input Descriptor in the Presentation Definition that this Presentation Submission is related to.
+        definition_id:
+          type: string
+          description: Must be the ID of a valid PresentationDefinition
+          example: 32f54163-7166-48f1-93d8-ff217bdb0653
+        descriptor_map:
+          type: array
+          items:
+            $ref: '#/components/schemas/Descriptor'
+      required:
+        - id
+        - definition_id
+        - descriptor_map
+    AuthenticationResponse:
+      type: object
+      properties:
+        presentation_submission:
+          $ref: '#/components/schemas/PresentationSubmission'
+        vp_token:
+          $ref: '#/components/schemas/VerifiablePresentation'
+      required:
+        - presentation_submission
+        - vp_token
+    VerifiablePresentation:
+      description: Presentation, containing on or more credentials
+      type: object
+      properties:
+        '@context':
+          type: array
+          items:
+            type: string
+            format: uri
+          example:
+          - https://www.w3.org/2018/credentials/v1
+        type:
+          type: array 
+          items:
+            type: string
+            enum: ["VerifiablePresentation"]
+        verifiableCredential: 
+          type: array
+          items:
+            $ref: '#/components/schemas/VerifiableCredential'
+        id:
+          type: string
+          example: ebc6f1c2
+        holder:
+          $ref: '#/components/schemas/Did'
+        proof:
+          $ref: '#/components/schemas/Proof'
+    VerifiableCredential:
+      description: Credential in the format ldp_vc
+      type: object
+      properties:
+        types:
+          $ref: '#/components/schemas/CredentialsType'
+        '@context':
+          type: array
+          items:
+            type: string
+            format: uri
+          example:
+            - https://www.w3.org/2018/credentials/v1
+            - https://w3id.org/security/suites/jws-2020/v1
+        credentialsSubject:
+          description: A JSON object containing a list of key value pairs, where the key identifies the claim offered in the Credential. The value MAY be a dictionary, which allows to represent the full (potentially deeply nested) structure of the verifiable credential to be issued.
+          type: object
+      additionalProperties: true
+      required:
+        - '@context'
+        - types
+        - format
+
+    JWK:
+      type: object
+      properties:
+        kid:
+          type: string
+          example: 179d7b56-6598-4045-9a32-4635e8b0f605
+        kty:
+          type: string
+          example: EC
+        use:
+          type: string
+          example: sig
+        alg:
+          type: string
+          example: ES256
+        crv:
+          type: string
+          example: P-256
+        x:
+          type: string
+          example: 3ctHY_0KJW5ezT-oF39t3wPX6XlggWKOSPFW8iooBXk
+        y:
+          type: string
+          example: HXA4mBHgObIE56E92yxN5bYQ27wSxlVPfuNWaY06TTI
+        n:
+          type: string
+        e:
+          type: string
+        d:
+          type: string
+    JWKSet:
+      type: object
+      properties: 
+        keys: 
+         type: array
+         items:
+          $ref: '#/components/schemas/JWK'
+    OpenIDProviderMetadata:
+      type: object
+      properties:
+        issuer:
+          type: string
+          example: https://api-test.ebsi.eu/authorisation/v4
+        authorization_endpoint:
+          type: string
+          example: https://api-test.ebsi.eu/authorisation/v4/authorize
+        token_endpoint:
+          type: string
+          example: https://api-test.ebsi.eu/authorisation/v4/token
+        presentation_definition_endpoint:
+          type: string
+          example: https://api-test.ebsi.eu/authorisation/v4/presentation-definitions
+        jwks_uri:
+          type: string
+          example: https://api-test.ebsi.eu/authorisation/v4/jwks
+        scopes_supported:
+          type: array
+          items:
+            type: string
+          example: ["openid","didr_invite","didr_write","tir_invite","tir_write"]
+        response_types_supported:
+          type: array
+          items:
+            type: string
+          example: ["token"]
+        response_mode_supported:
+          type: array
+          items:
+            type: string
+          example: ["query","fragment"]
+        grant_types_supported:
+          type: array
+          items:
+            type: string
+          example: ["vp_token"]
+        subject_types_supported:
+          type: array
+          items:
+            type: string
+          example: ["public"]
+        id_token_signing_alg_values_supported:
+          type: array
+          items:
+            type: string
+          example: ["ES256"]
+        request_object_signing_alg_values_supported:
+          type: array
+          items:
+            type: string
+          example: ["ES256"]
+        request_parameter_supported:
+          type: boolean
+          example: true
+        token_endpoint_auth_methods_supported:
+          type: array
+          items:
+            type: string
+          example: ["private_key_jwt"]
+    ErrorMessage:
+      type: object
+      properties:
+        summary:
+          type: string
+          example: Missing Input
+        details:
+          type: string
+          example: Expected 'state' as a query parameter.
+    TokenRequest:
+      type: object
+      properties:
+        grant_type: 
+          type: string
+          enum: ["authorization_code"]
+        code:
+          type: string
+          example: myRandomString
+        redirect_uri:
+          type: string
+          format: uri
+          description: Same uri as provided as callback in the original request.
+          example: https://my-portal.com/auth_callback
+    TokenResponse:
+      type: object
+      properties:
+        token_type:
+          type: string
+          enum: ["Bearer"]
+        expires_in: 
+          type: number
+          example: 3600
+        access_token:
+          type: string
+    

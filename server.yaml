@@ -1,0 +1,24 @@
+server:
+    port: 8080
+
+logging:
+    jsonLogging: true
+    logRequests: true
+verifier: 
+    tirAddress: https://tir.de
+    did: did:key:myverifier
+    policies:
+        default:
+            SignaturePolicy: {}
+            IssuedDateBeforePolicy: {}
+            ValidFromBeforePolicy: {}
+            ExpirationDateAfterPolicy: {}
+            EbsiTrustedIssuerRegistryPolicy:
+                registryAddress: https://tir.de
+                issuerType: Undefined
+        credentialTypeSpecific:
+            "gx:compliance":
+                GaiaXComplianceIssuer:
+                    registryAddress: https://registry.gaia-x.fiware.dev/development/api/complianceIssuers
+ssiKit:
+    auditorURL: http://my-auditor
