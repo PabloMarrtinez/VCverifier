@@ -211,7 +211,8 @@ func InitVerifier(config *configModel.Configuration) (err error) {
 
 	credentialsConfig, err := InitServiceBackedCredentialsConfig(&config.ConfigRepo)
 
-	verifierURI := "https://umu-verifier:30001/verifyCred"
+	verifierURI := "https://wallet-ssikit-service:30401/verifyCred"
+
 	validationServerCertPath := "./certs/server_cert.pem"
 
 	externalFabricValidator := InitFabricRegistryValidationService(verifierURI, validationServerCertPath)
