@@ -18,4 +18,6 @@ COPY --from=build /go/src/app/views /go/src/app/views
 COPY --from=build /go/src/app/VCVerifier /go/src/app/VCVerifier
 COPY --from=build /go/src/app/server.yaml /go/src/app/server.yaml
 
-CMD ["tail -f"]
+RUN apk add --no-cache coreutils
+
+CMD ["tail", "-f", "/dev/null"]
