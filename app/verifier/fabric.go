@@ -1,8 +1,10 @@
 package verifier
 
 import (
+	"bytes"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -24,7 +26,30 @@ func InitFabricRegistryValidationService(verifierURI, validationServerCertPath s
 	}
 }
 
+type CredentialRequest struct {
+	Cred string `json:"cred"`
+}
+
 func (v *FabricRegistryValidationService) ValidateVC(verifiableCredential *verifiable.Credential, verificationContext ValidationContext) (bool, error) {
+	// Convierte la credencial a JSON
+	credentialBytes, err := json.Marshal(verifiableCredential)
+	if err != nil {
+		logging.Log().Errorf("Failed to marshal verifiable credential: %s", err)
+		return false, err
+	}
+
+	// Crea la solicitud con el parámetro "cred"
+	credRequest := CredentialRequest{
+		Cred: string(credentialBytes),
+	}
+
+	// Convierte la solicitud a JSON
+	requestBody, err := json.Marshal(credRequest)
+	if err != nil {
+		logging.Log().Errorf("Failed to marshal credential request: %s", err)
+		return false, err
+	}
+
 	caCertPool := x509.NewCertPool()
 	if v.validationServerCertPath != "" {
 		caCert, err := os.ReadFile(v.validationServerCertPath)
@@ -36,6 +61,8 @@ func (v *FabricRegistryValidationService) ValidateVC(verifiableCredential *verif
 			logging.Log().Error("Error appending server certificate")
 			return false, fmt.Errorf("error appending server certificate")
 		}
+	} else {
+		logging.Log().Warn("No validation server certificate path provided")
 	}
 
 	client := &http.Client{
@@ -46,11 +73,12 @@ func (v *FabricRegistryValidationService) ValidateVC(verifiableCredential *verif
 		},
 	}
 
-	req, err := http.NewRequest("POST", v.verifierURI, nil) // Asume POST, ajusta según sea necesario
+	req, err := http.NewRequest("POST", v.verifierURI, bytes.NewBuffer(requestBody))
 	if err != nil {
 		logging.Log().Errorf("Failed to create request: %s", err)
 		return false, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 
 	response, err := client.Do(req)
 	if err != nil {

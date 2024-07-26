@@ -211,9 +211,9 @@ func InitVerifier(config *configModel.Configuration) (err error) {
 
 	credentialsConfig, err := InitServiceBackedCredentialsConfig(&config.ConfigRepo)
 
-	verifierURI := "https://wallet-ssikit-service:30401/verifyCred"
+	verifierURI := "https://wallet.testing1.k8s-cluster.tango.rid-intrasoft.eu/verifier/verifyCred"
 
-	validationServerCertPath := "./certs/server_cert.pem"
+	validationServerCertPath := "./certs/cert.pem"
 
 	externalFabricValidator := InitFabricRegistryValidationService(verifierURI, validationServerCertPath)
 
