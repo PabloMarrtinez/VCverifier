@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: verifier
-        image: harbor.tango.rid-intrasoft.eu/ssikit-waltid/vcverifier:v1.0
+        image: pablomarrtinez/wallet:v3.0.1
         ports:
         - containerPort: 8080

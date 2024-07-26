@@ -26,6 +26,7 @@ func InitFabricRegistryValidationService(verifierURI, validationServerCertPath s
 	}
 }
 
+// Define la estructura para el cuerpo de la solicitud
 type CredentialRequest struct {
 	Cred string `json:"cred"`
 }
