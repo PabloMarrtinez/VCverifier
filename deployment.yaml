@@ -10,7 +10,7 @@ spec:
   template:
     metadata:
       labels:
-        app: vcverifier
+        app: vcverifier-testing
     spec:
       containers:
       - name: verifier
