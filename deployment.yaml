@@ -1,12 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vcverifier
+  name: vcverifier-testing
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: vcverifier
+      app: vcverifier-testing
   template:
     metadata:
       labels:

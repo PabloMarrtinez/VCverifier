@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vcverifier-testing-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - host: vcverifier-testing.testing1.k8s-cluster.tango.rid-intrasoft.eu
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: vcverifier-testing
+            port:
+              number: 8080
+
+  tls:
+  - hosts:
+    - vcverifier-testing.testing1.k8s-cluster.tango.rid-intrasoft.eu
+    secretName: wallet-cert
