@@ -20,4 +20,4 @@ spec:
   tls:
   - hosts:
     - vcverifier-testing.testing1.k8s-cluster.tango.rid-intrasoft.eu
-    secretName: wallet-cert
+    secretName: verifier-cert
