@@ -16,7 +16,7 @@ spec:
           service:
             name: vcverifier-testing
             port:
-              number: 8080             
+              number: 3000             
   tls:
   - hosts:
     - vcverifier-testing.testing1.k8s-cluster.tango.rid-intrasoft.eu

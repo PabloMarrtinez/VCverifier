@@ -15,7 +15,7 @@ spec:
       - name: verifier
         image: pablomarrtinez/verifier:v3.0.4
         ports:
-        - containerPort: 8080     
+        - containerPort: 3000     
         env:
         - name: CONFIG_FILE
           value: /configs/server.yaml
