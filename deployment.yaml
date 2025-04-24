@@ -3,17 +3,26 @@ kind: Deployment
 metadata:
   name: vcverifier-testing
 spec:
-  replicas: 1
   selector:
     matchLabels:
-      app: vcverifier-testing
+      app: vcverifier-testing   
   template:
     metadata:
       labels:
-        app: vcverifier-testing
+        app: vcverifier-testing   
     spec:
       containers:
       - name: verifier
         image: pablomarrtinez/verifier:v3.0.4
         ports:
-        - containerPort: 8080
+        - containerPort: 8080     
+        env:
+        - name: CONFIG_FILE
+          value: /configs/server.yaml
+        volumeMounts:
+        - name: config-volume
+          mountPath: /configs/
+      volumes:
+      - name: config-volume
+        configMap:
+          name: vcverifier-testing-config   

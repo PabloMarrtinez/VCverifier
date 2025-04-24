@@ -4,6 +4,7 @@ metadata:
   name: vcverifier-testing-ingress
   annotations:
     kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-fiware-eks   
 spec:
   rules:
   - host: vcverifier-testing.testing1.k8s-cluster.tango.rid-intrasoft.eu
@@ -15,9 +16,8 @@ spec:
           service:
             name: vcverifier-testing
             port:
-              number: 8080
-
+              number: 8080             
   tls:
   - hosts:
     - vcverifier-testing.testing1.k8s-cluster.tango.rid-intrasoft.eu
-    secretName: verifier-cert
+    secretName: verifier-testing-tls    
