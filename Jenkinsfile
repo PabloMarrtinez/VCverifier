@@ -58,6 +58,7 @@ pipeline {
       stage("Deployment"){
        	    steps {
                withKubeConfig([credentialsId: 'K8s-config-file' , serverUrl: 'https://kubernetes.tango.rid-intrasoft.eu:6443', namespace:'ips-testing1']) {
+                 sh 'kubectl apply -f configmap.yaml'
                  sh 'kubectl apply -f service.yaml'
                  sh 'kubectl apply -f deployment.yaml'
                  sh 'kubectl apply -f ingress.yaml'
