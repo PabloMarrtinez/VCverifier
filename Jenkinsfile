@@ -14,7 +14,7 @@ pipeline {
       ARTIFACTORY_DOCKER_REGISTRY = "harbor.tango.rid-intrasoft.eu/ssikit-waltid/"
       BRANCH_NAME = "main"
       DOCKER_IMAGE_TAG = "$APP_NAME:R${env.BUILD_ID}"
-	TAG = 'v1.0'    
+	TAG = 'v1.1'    
 	KUBERNETES_NAMESPACE = 'ips-testing1'
 	HARBOR_SECRET = 'harborsecret'
 	CHART_NAME = 'vcverifier'    
