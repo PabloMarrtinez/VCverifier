@@ -18,7 +18,6 @@ import (
 	"github.com/fiware/VCVerifier/common"
 	"github.com/fiware/VCVerifier/logging"
 	"github.com/fiware/VCVerifier/verifier"
-	"github.com/trustbloc/vc-go/proof/defaults"
 	"github.com/trustbloc/vc-go/verifiable"
 
 	"github.com/gin-gonic/gin"
@@ -33,11 +32,7 @@ var presentationOptions = []verifiable.PresentationOpt{
 */
 
 var presentationOptions = []verifiable.PresentationOpt{
-	// comprobación de firma JWS / Linked Data Proof
-	verifiable.WithPresProofChecker(
-		defaults.NewDefaultProofChecker(verifier.JWTVerfificationMethodResolver{}),
-	),
-	// desactiva toda validación JSON-LD (no va a fetch-ear @context)
+	verifiable.WithPresDisabledProofCheck(),
 	verifiable.WithDisabledJSONLDChecks(),
 }
 
