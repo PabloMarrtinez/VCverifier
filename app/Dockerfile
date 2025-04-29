@@ -20,4 +20,4 @@ COPY --from=build /go/src/app/server.yaml /go/src/app/server.yaml
 
 RUN apk add --no-cache coreutils
 
-CMD ["tail", "-f", "/dev/null"]
+CMD ["./VCVerifier"]
