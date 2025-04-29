@@ -18,7 +18,6 @@ import (
 	"github.com/fiware/VCVerifier/common"
 	"github.com/fiware/VCVerifier/logging"
 	"github.com/fiware/VCVerifier/verifier"
-	"github.com/piprate/json-gold/ld"
 	"github.com/trustbloc/vc-go/proof/defaults"
 	"github.com/trustbloc/vc-go/verifiable"
 
@@ -26,9 +25,21 @@ import (
 )
 
 var apiVerifier verifier.Verifier
+
+/*
 var presentationOptions = []verifiable.PresentationOpt{
 	verifiable.WithPresProofChecker(defaults.NewDefaultProofChecker(verifier.JWTVerfificationMethodResolver{})),
 	verifiable.WithPresJSONLDDocumentLoader(ld.NewDefaultDocumentLoader(http.DefaultClient))}
+*/
+
+var presentationOptions = []verifiable.PresentationOpt{
+	// comprobación de firma JWS / Linked Data Proof
+	verifiable.WithPresProofChecker(
+		defaults.NewDefaultProofChecker(verifier.JWTVerfificationMethodResolver{}),
+	),
+	// desactiva toda validación JSON-LD (no va a fetch-ear @context)
+	verifiable.WithDisabledJSONLDChecks(),
+}
 
 var ErrorMessagNoGrantType = ErrorMessage{"no_grant_type_provided", "Token requests require a grant_type."}
 var ErrorMessageUnsupportedGrantType = ErrorMessage{"unsupported_grant_type", "Provided grant_type is not supported by the implementation."}
