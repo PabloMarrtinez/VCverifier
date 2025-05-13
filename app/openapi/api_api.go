@@ -212,6 +212,61 @@ func VerifierAPIAuthenticationResponse(c *gin.Context) {
 	handleAuthenticationResponse(c, state, presentation)
 }
 
+func VerifierAPIAuthenticationResponseJSON(c *gin.Context) {
+	// ---- 99 % copiado del handler anterior ----
+	var state string
+	if s, ok := c.GetPostForm("state"); ok {
+		state = s
+	} else if s, ok := c.GetQuery("state"); ok {
+		state = s
+	} else {
+		c.AbortWithStatusJSON(400, ErrorMessageNoState)
+		return
+	}
+
+	vptoken, ok := c.GetPostForm("vp_token")
+	if !ok {
+		logging.Log().Info("No token was provided.")
+		c.AbortWithStatusJSON(400, ErrorMessageNoToken)
+		return
+	}
+
+	pres, err := extractVpFromToken(c, vptoken)
+	if err != nil {
+		// extractVpFromToken ya responde con 400
+		return
+	}
+
+	// ---- aquí llamamos a la NUEVA función 2 ----
+	handleAuthenticationResponseJSON(c, state, pres)
+}
+
+// Igual que handleAuthenticationResponse, pero en vez de 302 devolvemos JSON.
+func handleAuthenticationResponseJSON(
+	c *gin.Context,
+	state string,
+	presentation *verifiable.Presentation,
+) {
+	sameDevResp, err := getApiVerifier().AuthenticationResponse(state, presentation)
+	if err != nil {
+		logging.Log().Warnf("auth response error: %v", err)
+		c.AbortWithStatusJSON(400, ErrorMessage{Summary: err.Error()})
+		return
+	}
+
+	if sameDevResp != (verifier.SameDeviceResponse{}) {
+		c.JSON(http.StatusOK, gin.H{
+			"state": sameDevResp.SessionId,
+			"code":  sameDevResp.Code,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"state": state,
+	})
+}
+
 // GetVerifierAPIAuthenticationResponse - Stores the credential for the given session
 func GetVerifierAPIAuthenticationResponse(c *gin.Context) {
 	state, stateExists := c.GetQuery("state")

@@ -413,6 +413,7 @@ func (v *CredentialVerifier) GenerateToken(clientId, subject, audience string, s
 			}
 		}
 	}
+
 	// FIXME How shall we handle VCs that are not needed for the give scope? Just ignore them and not include in the token?
 	token, err := v.generateJWT(verifiablePresentation, subject, audience)
 	if err != nil {

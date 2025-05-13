@@ -86,6 +86,12 @@ var routes = Routes{
 		"/api/v1/authentication_response",
 		GetVerifierAPIAuthenticationResponse,
 	},
+	{
+		"VerifierAPIAuthenticationResponseJSON",
+		http.MethodPost,
+		"/api/v1/authentication_response_json",
+		VerifierAPIAuthenticationResponseJSON,
+	},
 
 	{
 		"VerifierAPIJWKS",
