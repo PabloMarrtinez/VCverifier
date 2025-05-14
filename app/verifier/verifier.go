@@ -18,7 +18,7 @@ import (
 
 	common "github.com/fiware/VCVerifier/common"
 	configModel "github.com/fiware/VCVerifier/config"
-	"github.com/fiware/VCVerifier/tir"
+
 	"github.com/trustbloc/vc-go/verifiable"
 
 	logging "github.com/fiware/VCVerifier/logging"
@@ -32,6 +32,8 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 	"github.com/valyala/fasttemplate"
 )
+
+//	"github.com/fiware/VCVerifier/tir"
 
 var ErrorNoDID = errors.New("no_did_configured")
 var ErrorNoTIR = errors.New("no_tir_configured")
@@ -207,7 +209,7 @@ func InitVerifier(config *configModel.Configuration) (err error) {
 
 	credentialsVerifier := TrustBlocValidator{validationMode: config.Verifier.ValidationMode}
 
-	externalGaiaXValidator := InitGaiaXRegistryValidationService(verifierConfig)
+	//externalGaiaXValidator := InitGaiaXRegistryValidationService(verifierConfig)
 
 	credentialsConfig, err := InitServiceBackedCredentialsConfig(&config.ConfigRepo)
 
@@ -223,9 +225,9 @@ func InitVerifier(config *configModel.Configuration) (err error) {
 
 	clock := common.RealClock{}
 
-	var tokenProvider tir.TokenProvider
+	//var tokenProvider tir.TokenProvider
 	if (&config.M2M).AuthEnabled {
-		tokenProvider, err = tir.InitM2MTokenProvider(config, clock)
+		//tokenProvider, err = tir.InitM2MTokenProvider(config, clock)
 		if err != nil {
 			logging.Log().Errorf("Was not able to instantiate the token provider. Err: %v", err)
 			return err
@@ -235,13 +237,13 @@ func InitVerifier(config *configModel.Configuration) (err error) {
 		logging.Log().Infof("Auth disabled.")
 	}
 
-	tirClient, err := tir.NewTirHttpClient(tokenProvider, config.M2M)
+	//tirClient, err := tir.NewTirHttpClient(tokenProvider, config.M2M)
 	if err != nil {
 		logging.Log().Errorf("Was not able to instantiate the trusted-issuers-registry client. Err: %v", err)
 		return err
 	}
-	trustedParticipantVerificationService := TrustedParticipantValidationService{tirClient: tirClient}
-	trustedIssuerVerificationService := TrustedIssuerValidationService{tirClient: tirClient}
+	//trustedParticipantVerificationService := TrustedParticipantValidationService{tirClient: tirClient}
+	//trustedIssuerVerificationService := TrustedIssuerValidationService{tirClient: tirClient}
 
 	key, err := initPrivateKey(verifierConfig.KeyAlgorithm)
 
@@ -263,6 +265,26 @@ func InitVerifier(config *configModel.Configuration) (err error) {
 		credentialsConfig,
 		[]ValidationService{
 			&credentialsVerifier,
+			externalFabricValidator,
+		},
+		verifierConfig.KeyAlgorithm,
+	}
+
+
+	/*
+	verifier = &CredentialVerifier{
+		(&config.Server).Host,
+		verifierConfig.Did,
+		verifierConfig.TirAddress,
+		key,
+		sessionCache,
+		tokenCache,
+		&randomGenerator{},
+		clock,
+		common.JwtTokenSigner{},
+		credentialsConfig,
+		[]ValidationService{
+			&credentialsVerifier,
 			&externalGaiaXValidator,
 			&trustedParticipantVerificationService,
 			&trustedIssuerVerificationService,
@@ -270,7 +292,7 @@ func InitVerifier(config *configModel.Configuration) (err error) {
 		},
 		verifierConfig.KeyAlgorithm,
 	}
-
+	*/
 	logging.Log().Debug("Successfully initalized the verifier")
 	return
 }
@@ -474,7 +496,7 @@ func (v *CredentialVerifier) AuthenticationResponse(state string, verifiablePres
 	loginSession := loginSessionInterface.(loginSession)
 
 	// TODO extract into separate policy
-	trustedChain, _ := verifyChain(verifiablePresentation.Credentials())
+	//trustedChain, _ := verifyChain(verifiablePresentation.Credentials())
 
 	for _, credential := range verifiablePresentation.Credentials() {
 		verificationContext, err := v.getTrustRegistriesValidationContext(loginSession.clientId, credential.Contents().Types)
@@ -484,6 +506,7 @@ func (v *CredentialVerifier) AuthenticationResponse(state string, verifiablePres
 		}
 		//FIXME make it an error if no policy was checked at all( possible misconfiguration)
 		for _, verificationService := range v.validationServices {
+			/*
 			if trustedChain {
 				logging.Log().Debug("Credentials chain is trusted.")
 				_, isTrustedParticipantVerificationService := verificationService.(*TrustedParticipantValidationService)
@@ -493,6 +516,7 @@ func (v *CredentialVerifier) AuthenticationResponse(state string, verifiablePres
 					continue
 				}
 			}
+			*/
 
 			result, err := verificationService.ValidateVC(credential, verificationContext)
 			if err != nil {
