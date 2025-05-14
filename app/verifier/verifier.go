@@ -215,9 +215,7 @@ func InitVerifier(config *configModel.Configuration) (err error) {
 
 	verifierURI := "https://wallet.testing1.k8s-cluster.tango.rid-intrasoft.eu/verifier/verifyCred"
 
-	validationServerCertPath := "./certs/cert.crt"
-
-	externalFabricValidator := InitFabricRegistryValidationService(verifierURI, validationServerCertPath)
+	externalFabricValidator := InitFabricRegistryValidationService(verifierURI)
 
 	if err != nil {
 		logging.Log().Errorf("Was not able to initiate the credentials config. Err: %v", err)

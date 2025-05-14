@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: verifier
-        image: harbor.tango.rid-intrasoft.eu/ssikit-waltid/vcverifier:v1.4
+        image: harbor.tango.rid-intrasoft.eu/ssikit-waltid/vcverifier:v1.5
         ports:
         - containerPort: 3000     
         env:
