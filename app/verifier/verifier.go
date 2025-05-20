@@ -213,7 +213,7 @@ func InitVerifier(config *configModel.Configuration) (err error) {
 
 	credentialsConfig, err := InitServiceBackedCredentialsConfig(&config.ConfigRepo)
 
-	verifierURI := "http://vcverifier-testing:3000/verifyCred"
+	verifierURI := "https://ssikit-verifier.testing1.k8s-cluster.tango.rid-intrasoft.eu/verifyCred"
 
 	externalFabricValidator := InitFabricRegistryValidationService(verifierURI)
 
