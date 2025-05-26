@@ -213,7 +213,9 @@ func InitVerifier(config *configModel.Configuration) (err error) {
 
 	credentialsConfig, err := InitServiceBackedCredentialsConfig(&config.ConfigRepo)
 
-	verifierURI := "https://ssikit-verifier.testing1.k8s-cluster.tango.rid-intrasoft.eu/verifyCred"
+	verifierURI := "http://verifierumu-service:32101/verifyCred"
+
+	logging.Log().Info("VerifierURI: " + verifierURI)
 
 	externalFabricValidator := InitFabricRegistryValidationService(verifierURI)
 
@@ -268,28 +270,27 @@ func InitVerifier(config *configModel.Configuration) (err error) {
 		verifierConfig.KeyAlgorithm,
 	}
 
-
 	/*
-	verifier = &CredentialVerifier{
-		(&config.Server).Host,
-		verifierConfig.Did,
-		verifierConfig.TirAddress,
-		key,
-		sessionCache,
-		tokenCache,
-		&randomGenerator{},
-		clock,
-		common.JwtTokenSigner{},
-		credentialsConfig,
-		[]ValidationService{
-			&credentialsVerifier,
-			&externalGaiaXValidator,
-			&trustedParticipantVerificationService,
-			&trustedIssuerVerificationService,
-			externalFabricValidator,
-		},
-		verifierConfig.KeyAlgorithm,
-	}
+		verifier = &CredentialVerifier{
+			(&config.Server).Host,
+			verifierConfig.Did,
+			verifierConfig.TirAddress,
+			key,
+			sessionCache,
+			tokenCache,
+			&randomGenerator{},
+			clock,
+			common.JwtTokenSigner{},
+			credentialsConfig,
+			[]ValidationService{
+				&credentialsVerifier,
+				&externalGaiaXValidator,
+				&trustedParticipantVerificationService,
+				&trustedIssuerVerificationService,
+				externalFabricValidator,
+			},
+			verifierConfig.KeyAlgorithm,
+		}
 	*/
 	logging.Log().Debug("Successfully initalized the verifier")
 	return
@@ -505,15 +506,15 @@ func (v *CredentialVerifier) AuthenticationResponse(state string, verifiablePres
 		//FIXME make it an error if no policy was checked at all( possible misconfiguration)
 		for _, verificationService := range v.validationServices {
 			/*
-			if trustedChain {
-				logging.Log().Debug("Credentials chain is trusted.")
-				_, isTrustedParticipantVerificationService := verificationService.(*TrustedParticipantValidationService)
-				_, isTrustedIssuerVerificationService := verificationService.(*TrustedIssuerValidationService)
-				if isTrustedIssuerVerificationService || isTrustedParticipantVerificationService {
-					logging.Log().Debug("Skip the tir services.")
-					continue
+				if trustedChain {
+					logging.Log().Debug("Credentials chain is trusted.")
+					_, isTrustedParticipantVerificationService := verificationService.(*TrustedParticipantValidationService)
+					_, isTrustedIssuerVerificationService := verificationService.(*TrustedIssuerValidationService)
+					if isTrustedIssuerVerificationService || isTrustedParticipantVerificationService {
+						logging.Log().Debug("Skip the tir services.")
+						continue
+					}
 				}
-			}
 			*/
 
 			result, err := verificationService.ValidateVC(credential, verificationContext)
