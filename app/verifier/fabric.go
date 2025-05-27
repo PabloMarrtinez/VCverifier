@@ -31,12 +31,15 @@ func (v *FabricRegistryValidationService) ValidateVC(
 	_ ValidationContext,
 ) (bool, error) {
 	// Convierte la credencial a JSON
+
+	
+
 	credentialBytes, err := json.Marshal(verifiableCredential)
 	if err != nil {
 		logging.Log().Errorf("Failed to marshal verifiable credential: %s", err)
 		return false, err
 	}
-
+	logging.Log().Info("Credential: "+string(credentialBytes))
 	// Prepara el cuerpo de la petición
 	credRequest := CredentialRequest{Cred: string(credentialBytes)}
 	requestBody, err := json.Marshal(credRequest)
@@ -67,6 +70,8 @@ func (v *FabricRegistryValidationService) ValidateVC(
 		logging.Log().Errorf("Validation failed with status: %s", resp.Status)
 		return false, nil
 	}
+
+	logging.Log().Info("The credential signature is valid")
 
 	return true, nil
 }

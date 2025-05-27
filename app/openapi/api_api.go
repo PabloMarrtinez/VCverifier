@@ -224,12 +224,18 @@ func VerifierAPIAuthenticationResponseJSON(c *gin.Context) {
 		return
 	}
 
+
+	
+
+
 	vptoken, ok := c.GetPostForm("vp_token")
 	if !ok {
 		logging.Log().Info("No token was provided.")
 		c.AbortWithStatusJSON(400, ErrorMessageNoToken)
 		return
 	}
+
+	logging.Log().Info("vp_token: "+vptoken)
 
 	pres, err := extractVpFromToken(c, vptoken)
 	if err != nil {
